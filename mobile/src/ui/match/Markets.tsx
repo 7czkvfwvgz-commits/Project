@@ -144,10 +144,14 @@ export function Markets({ analysis, onEnterOdds }: { analysis: MatchAnalysis; on
               <ConfidenceBadge confidence={groupConfidence} />
             </Row>
             {skill.level !== 'untested' && skill.improvement !== null ? (
-              <Txt variant="caption" color={colors.textMuted}>
-                {t('perf.backtest')}: {(skill.improvement * 100).toFixed(1)}% ({t(`level.${skill.level === 'clear' ? 'high' : 'low'}`)})
+              <Txt variant="caption" color={skill.level === 'clear' ? colors.textMuted : colors.warning}>
+                {t(skill.improvement > 0 ? 'markets.skill' : 'markets.noSkill', { pct: (skill.improvement * 100).toFixed(1), n: skill.matches })}
               </Txt>
-            ) : null}
+            ) : (
+              <Txt variant="caption" color={colors.textMuted}>
+                {t('conf.marketUntested')}
+              </Txt>
+            )}
             {group === 'halftime' ? (
               <Txt variant="caption" color={colors.textMuted}>
                 {t('markets.htftNote')}

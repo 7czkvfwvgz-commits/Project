@@ -1,4 +1,5 @@
 import type { HistoricalMatch, LeagueDataset } from '@/domain/types';
+import { shortTeamName } from '@/domain/teams';
 import type { DateKey } from '@/time/tz';
 
 export interface FormEntry {
@@ -66,7 +67,7 @@ function entryFor(m: HistoricalMatch, team: string): FormEntry {
   return {
     date: m.date,
     opponent: home ? m.away : m.home,
-    opponentName: home ? m.awayName : m.homeName,
+    opponentName: shortTeamName(home ? m.awayName : m.homeName),
     venue: home ? 'H' : 'A',
     gf,
     ga,
@@ -139,7 +140,7 @@ export function summarizeTeam(dataset: LeagueDataset, team: string, asOf: DateKe
   const last10 = history.slice(0, 10);
   return {
     key: team,
-    name: dataset.teamNames[team] ?? team,
+    name: shortTeamName(dataset.teamNames[team] ?? team),
     season,
     last5: history.slice(0, 5),
     last10,

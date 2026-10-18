@@ -12,8 +12,15 @@ export const LANGUAGES: { id: Lang; label: string }[] = [
   { id: 'en', label: 'English' },
 ];
 
-/** W/D/L result codes inside a `form` parameter are localised (Bulgarian: П/Р/З). */
+const DATE_PARAM = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/**
+ * W/D/L result codes inside a `form` parameter are localised (Bulgarian: П/Р/З),
+ * and calendar dates (YYYY-MM-DD) are shown as DD.MM.YYYY.
+ */
 function formatParam(lang: Lang, name: string, value: string | number): string {
+  const date = typeof value === 'string' ? DATE_PARAM.exec(value) : null;
+  if (date) return `${date[3]}.${date[2]}.${date[1]}`;
   if (name === 'form' && typeof value === 'string') {
     return value
       .split('')

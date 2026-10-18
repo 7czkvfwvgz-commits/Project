@@ -19,6 +19,12 @@ import { colors, space } from '@/ui/theme';
 import { localDateKey } from '@/time/tz';
 
 type Tab = 'overview' | 'markets' | 'stats' | 'explain';
+
+/** "Matchday 9", "9. Round" or "9" from the source become "Кръг 9"; anything else is shown as published. */
+function roundLabel(round: string, t: ReturnType<typeof useT>['t']): string {
+  const m = /^(?:matchday|round|spieltag|jornada|giornata)?\s*(\d{1,2})\.?\s*(?:round|matchday)?$/i.exec(round.trim());
+  return m ? t('match.roundNumber', { n: Number(m[1]) }) : t('match.round', { round });
+}
 const TABS: Tab[] = ['overview', 'markets', 'stats', 'explain'];
 
 const SOURCE_LABEL: Record<string, string> = {
@@ -129,7 +135,7 @@ export default function MatchScreen() {
         <View style={styles.hero}>
           <Txt variant="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>
             {comp ? `${comp.country.flag} ${comp.name[lang]}` : f.competition}
-            {f.round ? ` • ${t('match.round', { round: f.round })}` : ''}
+            {f.round ? ` • ${roundLabel(f.round, t)}` : ''}
           </Txt>
           <Row style={{ alignItems: 'center' }}>
             <Txt variant="h1" style={styles.team} numberOfLines={2}>

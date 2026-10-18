@@ -180,14 +180,14 @@ export function Stats({ analysis }: { analysis: MatchAnalysis }) {
             ['stats.injuries', 'injuries'],
           ] as const
         ).map(([label, field]) => (
-          <Row key={field}>
-            <Icon name="remove-circle-outline" size={14} color={colors.neutral} />
-            <Txt variant="small" style={{ flex: 1 }}>
-              {t(label)}
-            </Txt>
-            <Txt variant="caption" color={colors.textMuted}>
-              {analysis.advanced.unavailable.includes(field) ? t('stats.advancedUnavailable') : '—'}
-            </Txt>
+          <Row key={field} style={{ alignItems: 'flex-start' }}>
+            <Icon name="remove-circle-outline" size={14} color={colors.neutral} style={{ marginTop: 3 }} />
+            <View style={{ flex: 1 }}>
+              <Txt variant="small">{t(label)}</Txt>
+              <Txt variant="caption" color={colors.textMuted}>
+                {analysis.advanced.unavailable.includes(field) ? t('stats.advancedUnavailable') : '—'}
+              </Txt>
+            </View>
           </Row>
         ))}
         <Txt variant="caption" color={colors.textMuted}>

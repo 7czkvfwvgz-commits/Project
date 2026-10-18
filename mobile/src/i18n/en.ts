@@ -233,6 +233,9 @@ export const en: Record<TKey, string> = {
   'outcome.unknown': 'Unsettled',
   'markets.whyFail': 'Main reasons the prediction could fail',
   'markets.support': 'Supporting statistics',
+  'markets.skill': 'Historical check ({n} matches): {pct}% lower error (log loss) than league-average frequencies.',
+  'markets.noSkill': 'Historical check ({n} matches): the model is not better than league-average frequencies ({pct}%).',
+  'match.roundNumber': 'Round {n}',
   'markets.htftNote': 'Halves are modelled as independent; the full-time result matches the main model.',
 
   'stats.form': 'Form',
