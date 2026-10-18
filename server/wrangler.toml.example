@@ -1,0 +1,8 @@
+# Optional free hosting on Cloudflare Workers (free plan: 100k requests/day).
+# 1. cp wrangler.toml.example wrangler.toml
+# 2. npx wrangler secret put FOOTBALL_DATA_API_KEY   (and ODDS_API_KEY, CLIENT_TOKEN if used)
+# 3. npx wrangler deploy
+# Note: the in-memory cache and rate limiter are per Worker instance.
+name = "football-analytics-proxy"
+main = "src/worker.ts"
+compatibility_date = "2026-10-01"

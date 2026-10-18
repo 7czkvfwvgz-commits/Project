@@ -1,0 +1,21 @@
+{
+  "name": "football-analytics-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal API-key proxy for football-data.org and The Odds API",
+  "scripts": {
+    "dev": "tsx watch src/node.ts",
+    "start": "tsx src/node.ts",
+    "test": "node --import tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3"
+  }
+}
