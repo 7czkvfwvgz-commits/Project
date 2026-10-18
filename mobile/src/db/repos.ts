@@ -325,7 +325,7 @@ export async function listSlips(db: SqlDb): Promise<SavedSlip[]> {
   return slips.map((s) => ({ ...s, legs: legs.filter((l) => l.slip_id === s.id).map(toLeg) }));
 }
 
-export async function setLegOutcome(db: SqlDb, legId: number, outcome: Outcome | null, source: 'source' | 'manual', now: number): Promise<void> {
+export async function setLegOutcome(db: SqlDb, legId: number, outcome: Outcome | null, source: 'source' | 'manual', now: number = Date.now()): Promise<void> {
   await db.runAsync('UPDATE slip_legs SET outcome = ?, outcome_source = ?, settled_at = ? WHERE id = ?', [outcome, outcome ? source : null, outcome ? now : null, legId]);
 }
 

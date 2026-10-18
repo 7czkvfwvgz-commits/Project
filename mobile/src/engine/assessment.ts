@@ -84,19 +84,25 @@ export function assessConfidence(input: ConfidenceInput): Confidence {
     reasons.push({ key: 'conf.earlySeason', params: { n: seasonMin } });
   }
 
+  // Teams normally play every 3–10 days; a longer gap means the model has not seen recent rounds.
   const lastDates = [home?.lastMatchDate, away?.lastMatchDate];
   const gaps = lastDates.map((d) => (d ? diffDays(d, input.matchDate) : Infinity));
   const worstGap = Math.max(...gaps);
   if (worstGap > 45) {
-    score -= 25;
+    score -= 30;
     reasons.push({ key: 'conf.staleTeamData', params: { days: Number.isFinite(worstGap) ? worstGap : '—' } });
   } else if (worstGap > 21) {
-    score -= 15;
+    score -= 20;
+    reasons.push({ key: 'conf.staleTeamData', params: { days: worstGap } });
+  } else if (worstGap > 14) {
+    score -= 8;
     reasons.push({ key: 'conf.staleTeamData', params: { days: worstGap } });
   }
+  // Without the last three weeks of results confidence can never be high.
+  if (worstGap > 21) cap = Math.min(cap, 65);
 
   if (input.pendingResults >= 2) {
-    score -= 10;
+    score -= input.pendingResults >= 4 ? 15 : 10;
     reasons.push({ key: 'conf.missingResults', params: { n: input.pendingResults } });
   }
 
@@ -172,8 +178,10 @@ export function assessDataQuality(input: QualityInput): DataQuality {
 
   const latest = input.dataset.latestResultDate;
   const sourceAge = latest ? diffDays(latest, todayKey('UTC', input.nowMs)) : Infinity;
+  let qualityCap = 100;
   if (sourceAge > 21) {
     score -= 20;
+    qualityCap = 69;
     reasons.push({ key: 'quality.sourceLag', params: { date: latest ?? '—' } });
   } else if (sourceAge > 7) {
     score -= 10;
@@ -190,6 +198,6 @@ export function assessDataQuality(input: QualityInput): DataQuality {
     reasons.push({ key: 'quality.staleCache' });
   }
 
-  const final = clampScore(score);
+  const final = clampScore(Math.min(score, qualityCap));
   return { score: final, grade: gradeFor(final), reasons };
 }

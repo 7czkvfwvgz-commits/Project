@@ -3,15 +3,17 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
     "@react-native-community/datetimepicker": "9.1.0",
     "@react-native-community/netinfo": "12.0.1",
     "@tanstack/react-query": "^5.104.4",
     "expo": "~57.0.30",
+    "expo-asset": "~57.0.20",
     "expo-constants": "~57.0.22",
+    "expo-font": "~57.0.4",
     "expo-haptics": "~57.0.3",
     "expo-linear-gradient": "~57.0.2",
     "expo-linking": "~57.0.13",
-    "expo-localization": "~57.0.2",
     "expo-router": "~57.0.28",
     "expo-splash-screen": "~57.0.10",
     "expo-sqlite": "~57.0.4",
@@ -51,7 +53,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "backtest": "tsx scripts/backtest.ts",
-    "verify": "npm run typecheck && npm run lint && npm test -- --ci"
+    "verify": "npm run typecheck && npm run lint && npm test -- --ci",
+    "smoke": "tsx scripts/smoke.ts"
   },
   "private": true
 }

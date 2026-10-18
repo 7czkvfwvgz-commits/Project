@@ -16,6 +16,7 @@ import {
   type ResultsProvider,
   type StandingsProvider,
   type StatisticsProvider,
+  type AdvancedField,
 } from '../types';
 import { buildLeagueDataset, openfootballSeasonSchema, parseOpenfootballSeason, type OpenfootballSeasonJson, type ParsedSeason } from './parse';
 
@@ -181,7 +182,8 @@ export class OpenfootballProvider implements FixtureProvider, ResultsProvider, S
     return { rows: computeStandings(loaded.dataset, season, asOf), official: false, meta: loaded.meta };
   }
 
-  supportsAdvanced(): boolean {
+  /** football.json publishes fixtures and scores only: no xG, shots, corners, cards, lineups or injuries. */
+  supportsAdvanced(_field: AdvancedField): boolean {
     return false;
   }
 }

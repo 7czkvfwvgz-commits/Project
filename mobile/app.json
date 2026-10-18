@@ -30,7 +30,6 @@
     "plugins": [
       "expo-router",
       "expo-sqlite",
-      "expo-localization",
       "@react-native-community/datetimepicker",
       [
         "expo-splash-screen",
@@ -39,7 +38,9 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 160
         }
-      ]
+      ],
+      "expo-asset",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": false

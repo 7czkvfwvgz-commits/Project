@@ -321,6 +321,9 @@ export const en: Record<TKey, string> = {
   'slip.recordOutcome': 'Record outcome manually',
   'slip.return': 'Return: {amount}',
   'slip.legs': '{n} selections',
+  'slip.statusLabel': 'Status',
+  'slip.settledBySource': 'settled from the source result',
+  'slip.settledManually': 'recorded manually',
 
   'perf.total': 'Total predictions',
   'perf.settled': 'Settled',
@@ -425,6 +428,7 @@ export const en: Record<TKey, string> = {
   'error.invalid_response': 'Invalid response from source',
   'error.server': 'Source error',
   'error.unknown': 'Unexpected error',
+  'error.storage': 'The local database could not be opened.',
 
   'rg.reminder': 'Betting carries a risk of loss. Only stake what you can afford to lose. No prediction is guaranteed.',
   'rg.help': 'If gambling is causing you problems, seek professional help.',

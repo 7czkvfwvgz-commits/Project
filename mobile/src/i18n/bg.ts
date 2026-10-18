@@ -335,6 +335,9 @@ export const bg = {
   'slip.recordOutcome': 'Отбележи изход ръчно',
   'slip.return': 'Възвръщаемост: {amount}',
   'slip.legs': '{n} избора',
+  'slip.statusLabel': 'Статус',
+  'slip.settledBySource': 'уредено по резултат от източника',
+  'slip.settledManually': 'отбелязано ръчно',
 
   // Performance
   'perf.total': 'Общо прогнози',
@@ -443,6 +446,7 @@ export const bg = {
   'error.invalid_response': 'Невалиден отговор от източника',
   'error.server': 'Грешка в източника',
   'error.unknown': 'Неочаквана грешка',
+  'error.storage': 'Локалната база данни не можа да се отвори.',
 
   // Responsible use
   'rg.reminder': 'Залагането носи риск от загуба. Залагайте само суми, които можете да си позволите да загубите. Нито една прогноза не е гарантирана.',
