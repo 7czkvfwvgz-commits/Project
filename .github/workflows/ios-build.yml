@@ -1,0 +1,250 @@
+# Builds the iOS app on a GitHub-hosted macOS runner and publishes downloadable files:
+#   * FutbolAnaliz-unsigned.ipa    – Release build for iPhone (arm64), NOT code-signed.
+#                                    Must be re-signed before it can be installed (Sideloadly/AltStore
+#                                    with your Apple ID, or your own certificate). See README "iOS build".
+#   * FutbolAnaliz-simulator.zip   – Release build for the iOS Simulator (Apple-silicon Macs).
+# The simulator build is also installed and launched on the runner, and a screenshot is saved,
+# as an automated smoke test that the binary starts on iOS.
+#
+# No secrets are used. EXPO_PUBLIC_* values are public by design (they end up in the app bundle);
+# set them as repository *variables* if you deploy the proxy in server/.
+
+name: iOS build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/iphone-football-analytics-8ql0f0]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/ios-build.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  EXPO_PUBLIC_PROXY_URL: ${{ vars.EXPO_PUBLIC_PROXY_URL }}
+  EXPO_PUBLIC_PROXY_CLIENT_TOKEN: ${{ vars.EXPO_PUBLIC_PROXY_CLIENT_TOKEN }}
+  EXPO_NO_TELEMETRY: '1'
+
+jobs:
+  checks:
+    name: Typecheck, lint, unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test -- --ci
+
+  ios:
+    name: iOS ${{ matrix.target }}
+    needs: checks
+    runs-on: macos-15
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [device, simulator]
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest stable Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app | grep -v -i -E 'beta|rc' | sort -V | tail -1)
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - run: npm ci
+
+      - name: Generate native iOS project (expo prebuild)
+        run: npx expo prebuild --platform ios --no-install
+
+      - name: Locate workspace and scheme
+        run: |
+          PROJ=$(ls -d ios/*.xcodeproj | head -1)
+          APP_NAME=$(basename "$PROJ" .xcodeproj)
+          echo "APP_NAME=$APP_NAME" >> "$GITHUB_ENV"
+          echo "WORKSPACE=ios/$APP_NAME.xcworkspace" >> "$GITHUB_ENV"
+          echo "Scheme: $APP_NAME"
+
+      - name: Install CocoaPods dependencies
+        working-directory: mobile/ios
+        run: pod install
+
+      - name: Build unsigned device archive
+        if: matrix.target == 'device'
+        run: |
+          LOG="$RUNNER_TEMP/xcodebuild.log"
+          if ! xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "$APP_NAME" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/$APP_NAME.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            archive > "$LOG" 2>&1; then
+            grep -E 'error:|\*\* .*FAILED' "$LOG" | head -50 || true
+            tail -80 "$LOG"
+            exit 1
+          fi
+          tail -5 "$LOG"
+
+      - name: Package .ipa
+        if: matrix.target == 'device'
+        run: |
+          APP="$RUNNER_TEMP/$APP_NAME.xcarchive/Products/Applications/$APP_NAME.app"
+          test -d "$APP"
+          test -s "$APP/main.jsbundle"          # JS bundle (Hermes bytecode) is embedded
+          plutil -p "$APP/Info.plist" | grep -E 'CFBundleIdentifier|CFBundleShortVersionString|CFBundleVersion|MinimumOSVersion'
+          lipo -info "$APP/$APP_NAME"
+          mkdir -p "$RUNNER_TEMP/ipa/Payload" "$GITHUB_WORKSPACE/dist"
+          cp -R "$APP" "$RUNNER_TEMP/ipa/Payload/"
+          (cd "$RUNNER_TEMP/ipa" && zip -qry "$GITHUB_WORKSPACE/dist/$APP_NAME-unsigned.ipa" Payload)
+          ls -la "$GITHUB_WORKSPACE/dist"
+
+      - name: Pick an iPhone simulator
+        if: matrix.target == 'simulator'
+        run: |
+          UDID=$(xcrun simctl list devices available -j | jq -r '
+            .devices | to_entries
+            | map(select(.key | test("SimRuntime\\.iOS-")))
+            | sort_by(.key | capture("iOS-(?<a>[0-9]+)-(?<b>[0-9]+)") | [(.a|tonumber), (.b|tonumber)])
+            | last | .value | map(select(.name | test("^iPhone"))) | first | .udid')
+          test -n "$UDID" && test "$UDID" != "null"
+          xcrun simctl list devices | grep "$UDID"
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+
+      - name: Build for simulator
+        if: matrix.target == 'simulator'
+        run: |
+          LOG="$RUNNER_TEMP/xcodebuild.log"
+          if ! xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "$APP_NAME" \
+            -configuration Release \
+            -destination "id=$SIM_UDID" \
+            -derivedDataPath "$RUNNER_TEMP/sim" \
+            CODE_SIGNING_ALLOWED=NO \
+            build > "$LOG" 2>&1; then
+            grep -E 'error:|\*\* .*FAILED' "$LOG" | head -50 || true
+            tail -80 "$LOG"
+            exit 1
+          fi
+          tail -5 "$LOG"
+          APP="$RUNNER_TEMP/sim/Build/Products/Release-iphonesimulator/$APP_NAME.app"
+          test -s "$APP/main.jsbundle"
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "$GITHUB_WORKSPACE/dist/$APP_NAME-simulator.zip"
+          echo "SIM_APP=$APP" >> "$GITHUB_ENV"
+
+      - name: Smoke test – install and launch in the simulator
+        if: matrix.target == 'simulator'
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/smoke"
+          xcrun simctl boot "$SIM_UDID" || true
+          xcrun simctl bootstatus "$SIM_UDID" -b
+          xcrun simctl install "$SIM_UDID" "$SIM_APP"
+          BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$SIM_APP/Info.plist")
+          OUT=$(xcrun simctl launch "$SIM_UDID" "$BUNDLE_ID")
+          echo "$OUT"
+          PID=${OUT##*: }
+          sleep 45
+          xcrun simctl io "$SIM_UDID" screenshot "$GITHUB_WORKSPACE/smoke/launch.png"
+          xcrun simctl spawn "$SIM_UDID" log show --last 3m --style compact \
+            --predicate "process == \"$APP_NAME\"" > "$GITHUB_WORKSPACE/smoke/app.log" 2>&1 || true
+          if ps -p "$PID" > /dev/null; then
+            echo "App process $PID is still running after 45 s."
+          else
+            echo "::error::App process $PID exited (crash on launch?)"
+            tail -100 "$GITHUB_WORKSPACE/smoke/app.log"
+            exit 1
+          fi
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-${{ matrix.target }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload smoke-test screenshot and log
+        if: always() && matrix.target == 'simulator'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-smoke
+          path: smoke/*
+          if-no-files-found: ignore
+
+      - name: Upload xcodebuild log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log-${{ matrix.target }}
+          path: ${{ runner.temp }}/xcodebuild.log
+          if-no-files-found: ignore
+
+  release:
+    name: Publish downloadable release
+    needs: ios
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ios-*
+          path: dist
+          merge-multiple: true
+      - name: Create or replace the "ios-latest" pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ios-latest
+        run: |
+          rm -f dist/*.log
+          if [ -f dist/launch.png ]; then mv dist/launch.png dist/simulator-launch-screenshot.png; fi
+          (cd dist && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          cat > notes.md <<EOF
+          Automated build of commit ${GITHUB_SHA::7} (run #${GITHUB_RUN_NUMBER}).
+
+          **Files**
+          - \`FutbolAnaliz-unsigned.ipa\`: iPhone build, **not code-signed**. iOS only installs signed apps, so re-sign it with your own Apple ID before installing (for example with Sideloadly or AltStore; a free Apple ID gives a 7-day signature, and iOS 16+ needs Developer Mode turned on). Setup steps are in the README.
+          - \`FutbolAnaliz-simulator.zip\`: build for the iOS Simulator on Apple-silicon Macs (unzip, then \`xcrun simctl install booted FutbolAnaliz.app\`).
+          - \`simulator-launch-screenshot.png\`: screenshot taken 45 s after launching the simulator build on the CI runner.
+          - \`SHA256SUMS.txt\`: checksums.
+
+          The simulator build was installed and launched on the CI runner as a smoke test. Neither build has been tested on a physical iPhone.
+          This app does not place bets and nothing in it is a guaranteed outcome.
+          EOF
+          gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes || true
+          gh release create "$TAG" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "iOS build (latest, unsigned)" \
+            --notes-file notes.md
