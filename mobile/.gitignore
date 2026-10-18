@@ -47,3 +47,6 @@ yarn-error.*
 
 # test output
 coverage/
+
+# backtest download cache
+scripts/.cache/

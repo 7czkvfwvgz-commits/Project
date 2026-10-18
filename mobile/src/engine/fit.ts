@@ -28,21 +28,32 @@ export interface FitOptions {
   maxAgeDays: number;
   maxIterations: number;
   tolerance: number;
+  /**
+   * Shrinkage of the expected match total towards the league mean,
+   * T' = M · (T / M)^θ, keeping each side's share of T unchanged. θ = 1 is no
+   * shrinkage. Team scoring "style" is estimated far less reliably than
+   * relative strength, and unshrunk totals were over-dispersed out of sample.
+   */
+  totalShrink: number;
 }
 
-/** Tuned on 2023-24 and 2024-25 walk-forward results; see scripts/backtest.ts. */
+/**
+ * Chosen on the 2023-24 and 2024-25 walk-forward results of 10 leagues and
+ * evaluated once on 2025-26; see scripts/backtest.ts and src/data/backtest.json.
+ */
 export const DEFAULT_FIT_OPTIONS: FitOptions = {
-  halfLifeDays: 180,
+  halfLifeDays: 270,
   priorMatches: 4,
   minMatchesForRho: 150,
   minMatchesForModel: 40,
   maxAgeDays: 730,
   maxIterations: 300,
   tolerance: 1e-7,
+  totalShrink: 0.55,
 };
 
-/** Used only when a league has too little history: typical European top-flight rates. */
-export const GLOBAL_DEFAULT_RATES = { home: 1.5, away: 1.2 };
+/** Used only when a league has too little history: mean goals per match over the 9,910 backtest matches. */
+export const GLOBAL_DEFAULT_RATES = { home: 1.54, away: 1.27 };
 
 export interface TeamRating {
   key: string;
@@ -444,9 +455,16 @@ export function expectedGoalsFor(model: LeagueModel, homeKey: string, awayKey: s
   const h = model.ratings[homeKey] ?? avg;
   const a = model.ratings[awayKey] ?? avg;
   const missingTeams = [homeKey, awayKey].filter((k) => !model.ratings[k]);
+  const rawHome = model.homeAdvantage * h.attack * a.defence;
+  const rawAway = a.attack * h.defence;
+  const total = rawHome + rawAway;
+  const leagueTotal = model.avgHomeGoals + model.avgAwayGoals;
+  const theta = model.options.totalShrink;
+  const shrunk = theta >= 1 || !(leagueTotal > 0) ? total : leagueTotal * Math.pow(total / leagueTotal, theta);
+  const share = rawHome / total;
   return {
-    lambdaHome: clamp(model.homeAdvantage * h.attack * a.defence, LAMBDA_MIN, LAMBDA_MAX),
-    lambdaAway: clamp(a.attack * h.defence, LAMBDA_MIN, LAMBDA_MAX),
+    lambdaHome: clamp(shrunk * share, LAMBDA_MIN, LAMBDA_MAX),
+    lambdaAway: clamp(shrunk * (1 - share), LAMBDA_MIN, LAMBDA_MAX),
     fallback: missingTeams.length > 0 ? 'league_average' : 'none',
     missingTeams,
   };

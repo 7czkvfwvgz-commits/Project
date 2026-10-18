@@ -47,6 +47,8 @@ export interface Fixture {
   provider: ProviderId;
   /** Identifiers of the same match at other providers, when matched. */
   links: Partial<Record<ProviderId, string>>;
+  /** Provider whose status/kickoff/score is shown, when it differs from `provider`. */
+  statusProvider?: ProviderId;
   competition: string;
   season: string;
   round?: string;

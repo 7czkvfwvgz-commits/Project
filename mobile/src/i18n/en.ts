@@ -442,6 +442,8 @@ export const en: Record<TKey, string> = {
   'conf.notValidated': 'This competition is not covered by the model’s historical check.',
   'conf.halfTimeAssumption': 'Half-time markets rely on additional assumptions.',
   'conf.htftAssumption': 'Half time/Full time assumes independent halves.',
+  'conf.weakMarketSkill': 'In the historical check the model was only {pct}% better than league-average frequencies for this market.',
+  'conf.marketUntested': 'This market was not separately tested in the historical check.',
 
   'quality.demo': 'Demo data — not real.',
   'quality.resultsOnly': 'Results only: no xG, shots, lineups or injuries from the free sources.',

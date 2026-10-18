@@ -54,7 +54,17 @@ export const COMPETITIONS: readonly Competition[] = [
   { code: 'EC', name: { bg: 'Европейско първенство', en: 'UEFA European Championship' }, country: { code: 'EUR', bg: 'Европа', en: 'Europe', flag: '🇪🇺' }, tz: 'UTC', type: 'cup', seasonFormat: 'calendar', footballData: 'EC' },
 ];
 
-const BY_CODE = new Map(COMPETITIONS.map((c) => [c.code, c]));
+/** Fictional league used only in the clearly labelled demo mode. */
+export const DEMO_COMPETITION: Competition = {
+  code: 'DEMO',
+  name: { bg: 'Демо лига (измислена)', en: 'Demo league (fictional)' },
+  country: { code: 'DEMO', bg: 'Демо', en: 'Demo', flag: '🧪' },
+  tz: 'Europe/Sofia',
+  type: 'league',
+  seasonFormat: 'calendar',
+};
+
+const BY_CODE = new Map([...COMPETITIONS, DEMO_COMPETITION].map((c) => [c.code, c]));
 
 export function getCompetition(code: string): Competition | undefined {
   return BY_CODE.get(code);
@@ -64,11 +74,14 @@ export function competitionByFootballData(fdCode: string): Competition | undefin
   return COMPETITIONS.find((c) => c.footballData === fdCode);
 }
 
-/** Leagues whose history is available from openfootball, so the goal model can be fitted. */
+/** Leagues with a results source (openfootball, or the fictional demo league), so the goal model can be fitted. */
 export function isModelSupported(code: string): boolean {
   const c = BY_CODE.get(code);
-  return !!c && c.type === 'league' && !!c.openfootball;
+  return !!c && c.type === 'league' && (!!c.openfootball || c.code === DEMO_COMPETITION.code);
 }
+
+/** Competitions enabled by default: those with verified kickoff times or an official API. */
+export const DEFAULT_ENABLED_COMPETITIONS = COMPETITIONS.filter((c) => c.openfootballTimeZone || c.footballData).map((c) => c.code);
 
 /** Season label containing a date, e.g. 2026-10-18 → "2026-27" (split) or "2026" (calendar). */
 export function seasonForDate(c: Pick<Competition, 'seasonFormat'>, dateKey: string): string {

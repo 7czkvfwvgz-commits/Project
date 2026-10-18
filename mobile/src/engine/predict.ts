@@ -1,5 +1,6 @@
 import type { Fixture, LeagueDataset } from '@/domain/types';
 import { assessConfidence, assessDataQuality, type Confidence, type DataQuality } from './assessment';
+import { VALIDATED_COMPETITIONS } from './validation';
 import { expectedGoalsFor, type FallbackLevel, type FitOptions, type LeagueModel, type TeamRating } from './fit';
 import { buildHalfTimeModel, type HalfTimeModel } from './halftime';
 import { buildMarketBook, checkConsistency, type ConsistencyIssue, type MarketBook } from './markets';
@@ -8,8 +9,8 @@ import { buildScoreMatrix, type ScoreMatrix } from './scoreMatrix';
 export const MODEL_NAME = 'Dixon-Coles (IPF, time-weighted)';
 export const MODEL_SEMVER = '1.0.0';
 
-export function modelVersion(opts: Pick<FitOptions, 'halfLifeDays' | 'priorMatches'>): string {
-  return `dc-${MODEL_SEMVER}+hl${opts.halfLifeDays}.k${opts.priorMatches}`;
+export function modelVersion(opts: Pick<FitOptions, 'halfLifeDays' | 'priorMatches' | 'totalShrink'>): string {
+  return `dc-${MODEL_SEMVER}+hl${opts.halfLifeDays}.k${opts.priorMatches}.t${opts.totalShrink}`;
 }
 
 export interface MatchPrediction {
@@ -43,7 +44,8 @@ export interface PredictInput {
   dataset: LeagueDataset;
   model: LeagueModel;
   nowMs: number;
-  validated: boolean;
+  /** Defaults to whether the competition is covered by the shipped backtest. */
+  validated?: boolean;
   servedFromStaleCache?: boolean;
 }
 
@@ -89,7 +91,7 @@ export function predictMatch(input: PredictInput): MatchPrediction {
       away,
       fallback: eg.fallback === 'none' ? model.fallback : eg.fallback,
       matchDate: fixture.sourceDate,
-      validated: input.validated,
+      validated: input.validated ?? VALIDATED_COMPETITIONS.has(fixture.competition),
       pendingResults: pending,
     }),
     quality: assessDataQuality({

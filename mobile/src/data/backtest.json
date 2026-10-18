@@ -1,0 +1,804 @@
+{
+  "generatedAt": "2026-10-18T18:23:44.868Z",
+  "source": "github.com/openfootball/football.json (CC0-1.0)",
+  "method": "walk-forward; fit on results strictly before each match date (previous + current season)",
+  "modelVersion": "dc-1.0.0+hl270.k4.t0.55",
+  "params": {
+    "halfLifeDays": 270,
+    "priorMatches": 4,
+    "totalShrink": 0.55
+  },
+  "leagues": [
+    "ENG1",
+    "ENG2",
+    "GER1",
+    "GER2",
+    "ESP1",
+    "ITA1",
+    "FRA1",
+    "NED1",
+    "POR1",
+    "AUT1"
+  ],
+  "tuneSeasons": [
+    "2023-24",
+    "2024-25"
+  ],
+  "testSeason": "2025-26",
+  "observedGoalRates": {
+    "home": 1.5433,
+    "away": 1.2653,
+    "matches": 9910
+  },
+  "grid": [
+    {
+      "halfLifeDays": 90,
+      "priorMatches": 2,
+      "rps": 0.2039,
+      "logLoss1x2": 1.0007,
+      "matches": 6821
+    },
+    {
+      "halfLifeDays": 90,
+      "priorMatches": 4,
+      "rps": 0.2038,
+      "logLoss1x2": 1.0003,
+      "matches": 6821
+    },
+    {
+      "halfLifeDays": 90,
+      "priorMatches": 8,
+      "rps": 0.2052,
+      "logLoss1x2": 1.0048,
+      "matches": 6821
+    },
+    {
+      "halfLifeDays": 180,
+      "priorMatches": 2,
+      "rps": 0.2024,
+      "logLoss1x2": 0.9957,
+      "matches": 6821
+    },
+    {
+      "halfLifeDays": 180,
+      "priorMatches": 4,
+      "rps": 0.2022,
+      "logLoss1x2": 0.995,
+      "matches": 6821
+    },
+    {
+      "halfLifeDays": 180,
+      "priorMatches": 8,
+      "rps": 0.2028,
+      "logLoss1x2": 0.997,
+      "matches": 6821
+    },
+    {
+      "halfLifeDays": 270,
+      "priorMatches": 2,
+      "rps": 0.2022,
+      "logLoss1x2": 0.9952,
+      "matches": 6821
+    },
+    {
+      "halfLifeDays": 270,
+      "priorMatches": 4,
+      "rps": 0.202,
+      "logLoss1x2": 0.9943,
+      "matches": 6821
+    },
+    {
+      "halfLifeDays": 270,
+      "priorMatches": 8,
+      "rps": 0.2023,
+      "logLoss1x2": 0.9955,
+      "matches": 6821
+    },
+    {
+      "halfLifeDays": 365,
+      "priorMatches": 2,
+      "rps": 0.2023,
+      "logLoss1x2": 0.9953,
+      "matches": 6821
+    },
+    {
+      "halfLifeDays": 365,
+      "priorMatches": 4,
+      "rps": 0.202,
+      "logLoss1x2": 0.9943,
+      "matches": 6821
+    },
+    {
+      "halfLifeDays": 365,
+      "priorMatches": 8,
+      "rps": 0.2022,
+      "logLoss1x2": 0.9951,
+      "matches": 6821
+    }
+  ],
+  "totalsGrid": [
+    {
+      "totalShrink": 0.4,
+      "over25LogLoss": 0.679,
+      "bttsLogLoss": 0.6869,
+      "rps": 0.2021
+    },
+    {
+      "totalShrink": 0.55,
+      "over25LogLoss": 0.6783,
+      "bttsLogLoss": 0.6868,
+      "rps": 0.2021
+    },
+    {
+      "totalShrink": 0.7,
+      "over25LogLoss": 0.6786,
+      "bttsLogLoss": 0.6872,
+      "rps": 0.202
+    },
+    {
+      "totalShrink": 0.85,
+      "over25LogLoss": 0.68,
+      "bttsLogLoss": 0.6882,
+      "rps": 0.202
+    },
+    {
+      "totalShrink": 1,
+      "over25LogLoss": 0.6823,
+      "bttsLogLoss": 0.6897,
+      "rps": 0.202
+    }
+  ],
+  "test": {
+    "matches": 3089,
+    "rps": 0.2068,
+    "rpsBaseline": 0.2306,
+    "logLoss1x2": 1.0086,
+    "logLoss1x2Baseline": 1.0772,
+    "brier1x2": 0.603,
+    "brier1x2Baseline": 0.6519,
+    "accuracy1x2": 0.5063,
+    "over25": {
+      "brier": 0.246,
+      "brierBaseline": 0.2473,
+      "logLoss": 0.685,
+      "logLossBaseline": 0.6878
+    },
+    "over15": {
+      "brier": 0.1732
+    },
+    "under35": {
+      "brier": 0.2044
+    },
+    "btts": {
+      "brier": 0.2471,
+      "brierBaseline": 0.2473,
+      "logLoss": 0.6873,
+      "logLossBaseline": 0.6878
+    },
+    "halfTime1x2": {
+      "matches": 2901,
+      "logLoss": 1.0558,
+      "logLossBaseline": 1.0892
+    }
+  },
+  "byLeague": {
+    "ENG1": {
+      "matches": 380,
+      "rps": 0.2125,
+      "rpsBaseline": 0.2286,
+      "logLoss1x2": 1.0377,
+      "logLoss1x2Baseline": 1.0847,
+      "brier1x2": 0.6243,
+      "brier1x2Baseline": 0.6568,
+      "accuracy1x2": 0.4658,
+      "over25": {
+        "brier": 0.2511,
+        "brierBaseline": 0.2477,
+        "logLoss": 0.6954,
+        "logLossBaseline": 0.6886
+      },
+      "over15": {
+        "brier": 0.1672
+      },
+      "under35": {
+        "brier": 0.2069
+      },
+      "btts": {
+        "brier": 0.2465,
+        "brierBaseline": 0.2465,
+        "logLoss": 0.6861,
+        "logLossBaseline": 0.6862
+      },
+      "halfTime1x2": {
+        "matches": 353,
+        "logLoss": 1.0561,
+        "logLossBaseline": 1.0827
+      }
+    },
+    "ENG2": {
+      "matches": 557,
+      "rps": 0.224,
+      "rpsBaseline": 0.2321,
+      "logLoss1x2": 1.066,
+      "logLoss1x2Baseline": 1.0894,
+      "brier1x2": 0.6445,
+      "brier1x2Baseline": 0.6602,
+      "accuracy1x2": 0.4237,
+      "over25": {
+        "brier": 0.2532,
+        "brierBaseline": 0.2531,
+        "logLoss": 0.6997,
+        "logLossBaseline": 0.6994
+      },
+      "over15": {
+        "brier": 0.185
+      },
+      "under35": {
+        "brier": 0.1867
+      },
+      "btts": {
+        "brier": 0.2506,
+        "brierBaseline": 0.2499,
+        "logLoss": 0.6943,
+        "logLossBaseline": 0.6929
+      },
+      "halfTime1x2": {
+        "matches": 520,
+        "logLoss": 1.0871,
+        "logLossBaseline": 1.0898
+      }
+    },
+    "GER1": {
+      "matches": 306,
+      "rps": 0.1998,
+      "rpsBaseline": 0.2336,
+      "logLoss1x2": 0.984,
+      "logLoss1x2Baseline": 1.0765,
+      "brier1x2": 0.5843,
+      "brier1x2Baseline": 0.6522,
+      "accuracy1x2": 0.5523,
+      "over25": {
+        "brier": 0.23,
+        "brierBaseline": 0.2325,
+        "logLoss": 0.6518,
+        "logLossBaseline": 0.6579
+      },
+      "over15": {
+        "brier": 0.1377
+      },
+      "under35": {
+        "brier": 0.2388
+      },
+      "btts": {
+        "brier": 0.2398,
+        "brierBaseline": 0.2384,
+        "logLoss": 0.6725,
+        "logLossBaseline": 0.6698
+      },
+      "halfTime1x2": {
+        "matches": 294,
+        "logLoss": 1.053,
+        "logLossBaseline": 1.102
+      }
+    },
+    "GER2": {
+      "matches": 99,
+      "rps": 0.2323,
+      "rpsBaseline": 0.2393,
+      "logLoss1x2": 1.0407,
+      "logLoss1x2Baseline": 1.0614,
+      "brier1x2": 0.6234,
+      "brier1x2Baseline": 0.6417,
+      "accuracy1x2": 0.5354,
+      "over25": {
+        "brier": 0.2538,
+        "brierBaseline": 0.2427,
+        "logLoss": 0.7012,
+        "logLossBaseline": 0.6785
+      },
+      "over15": {
+        "brier": 0.1622
+      },
+      "under35": {
+        "brier": 0.2123
+      },
+      "btts": {
+        "brier": 0.2549,
+        "brierBaseline": 0.247,
+        "logLoss": 0.7037,
+        "logLossBaseline": 0.6871
+      },
+      "halfTime1x2": {
+        "matches": 94,
+        "logLoss": 1.1085,
+        "logLossBaseline": 1.1128
+      }
+    },
+    "ESP1": {
+      "matches": 380,
+      "rps": 0.2025,
+      "rpsBaseline": 0.224,
+      "logLoss1x2": 0.9875,
+      "logLoss1x2Baseline": 1.0506,
+      "brier1x2": 0.5868,
+      "brier1x2Baseline": 0.633,
+      "accuracy1x2": 0.5263,
+      "over25": {
+        "brier": 0.2439,
+        "brierBaseline": 0.2502,
+        "logLoss": 0.6808,
+        "logLossBaseline": 0.6935
+      },
+      "over15": {
+        "brier": 0.1668
+      },
+      "under35": {
+        "brier": 0.186
+      },
+      "btts": {
+        "brier": 0.247,
+        "brierBaseline": 0.2461,
+        "logLoss": 0.6872,
+        "logLossBaseline": 0.6853
+      },
+      "halfTime1x2": {
+        "matches": 365,
+        "logLoss": 1.0448,
+        "logLossBaseline": 1.0735
+      }
+    },
+    "ITA1": {
+      "matches": 380,
+      "rps": 0.2015,
+      "rpsBaseline": 0.2337,
+      "logLoss1x2": 0.9958,
+      "logLoss1x2Baseline": 1.0902,
+      "brier1x2": 0.5947,
+      "brier1x2Baseline": 0.6611,
+      "accuracy1x2": 0.5263,
+      "over25": {
+        "brier": 0.252,
+        "brierBaseline": 0.2488,
+        "logLoss": 0.6973,
+        "logLossBaseline": 0.6907
+      },
+      "over15": {
+        "brier": 0.2101
+      },
+      "under35": {
+        "brier": 0.1744
+      },
+      "btts": {
+        "brier": 0.2518,
+        "brierBaseline": 0.2518,
+        "logLoss": 0.6969,
+        "logLossBaseline": 0.6967
+      },
+      "halfTime1x2": {
+        "matches": 344,
+        "logLoss": 1.064,
+        "logLossBaseline": 1.0936
+      }
+    },
+    "FRA1": {
+      "matches": 305,
+      "rps": 0.2091,
+      "rpsBaseline": 0.2289,
+      "logLoss1x2": 1.0053,
+      "logLoss1x2Baseline": 1.0658,
+      "brier1x2": 0.6016,
+      "brier1x2Baseline": 0.643,
+      "accuracy1x2": 0.5311,
+      "over25": {
+        "brier": 0.2497,
+        "brierBaseline": 0.2501,
+        "logLoss": 0.6928,
+        "logLossBaseline": 0.6934
+      },
+      "over15": {
+        "brier": 0.2031
+      },
+      "under35": {
+        "brier": 0.22
+      },
+      "btts": {
+        "brier": 0.2516,
+        "brierBaseline": 0.2538,
+        "logLoss": 0.6966,
+        "logLossBaseline": 0.7009
+      },
+      "halfTime1x2": {
+        "matches": 282,
+        "logLoss": 1.0687,
+        "logLossBaseline": 1.0967
+      }
+    },
+    "NED1": {
+      "matches": 305,
+      "rps": 0.1972,
+      "rpsBaseline": 0.2274,
+      "logLoss1x2": 0.9894,
+      "logLoss1x2Baseline": 1.0723,
+      "brier1x2": 0.5869,
+      "brier1x2Baseline": 0.6485,
+      "accuracy1x2": 0.5279,
+      "over25": {
+        "brier": 0.2341,
+        "brierBaseline": 0.2402,
+        "logLoss": 0.6602,
+        "logLossBaseline": 0.6735
+      },
+      "over15": {
+        "brier": 0.1177
+      },
+      "under35": {
+        "brier": 0.2323
+      },
+      "btts": {
+        "brier": 0.2354,
+        "brierBaseline": 0.2387,
+        "logLoss": 0.6635,
+        "logLossBaseline": 0.6705
+      },
+      "halfTime1x2": {
+        "matches": 295,
+        "logLoss": 1.0431,
+        "logLossBaseline": 1.0757
+      }
+    },
+    "POR1": {
+      "matches": 306,
+      "rps": 0.1789,
+      "rpsBaseline": 0.2304,
+      "logLoss1x2": 0.9285,
+      "logLoss1x2Baseline": 1.082,
+      "brier1x2": 0.5491,
+      "brier1x2Baseline": 0.6555,
+      "accuracy1x2": 0.5752,
+      "over25": {
+        "brier": 0.2437,
+        "brierBaseline": 0.2509,
+        "logLoss": 0.6804,
+        "logLossBaseline": 0.695
+      },
+      "over15": {
+        "brier": 0.1847
+      },
+      "under35": {
+        "brier": 0.2092
+      },
+      "btts": {
+        "brier": 0.2467,
+        "brierBaseline": 0.2497,
+        "logLoss": 0.6865,
+        "logLossBaseline": 0.6925
+      },
+      "halfTime1x2": {
+        "matches": 287,
+        "logLoss": 0.9845,
+        "logLossBaseline": 1.0918
+      }
+    },
+    "AUT1": {
+      "matches": 71,
+      "rps": 0.2393,
+      "rpsBaseline": 0.2432,
+      "logLoss1x2": 1.0869,
+      "logLoss1x2Baseline": 1.089,
+      "brier1x2": 0.656,
+      "brier1x2Baseline": 0.662,
+      "accuracy1x2": 0.4225,
+      "over25": {
+        "brier": 0.2447,
+        "brierBaseline": 0.2502,
+        "logLoss": 0.6825,
+        "logLossBaseline": 0.6935
+      },
+      "over15": {
+        "brier": 0.1774
+      },
+      "under35": {
+        "brier": 0.2215
+      },
+      "btts": {
+        "brier": 0.2515,
+        "brierBaseline": 0.2535,
+        "logLoss": 0.6963,
+        "logLossBaseline": 0.7003
+      },
+      "halfTime1x2": {
+        "matches": 67,
+        "logLoss": 1.0757,
+        "logLossBaseline": 1.1106
+      }
+    }
+  },
+  "calibration": {
+    "result1x2": {
+      "ece": 0.0085,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 167,
+          "meanPredicted": 0.0752,
+          "observed": 0.0599,
+          "ciLow": 0.0328,
+          "ciHigh": 0.1067
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 1054,
+          "meanPredicted": 0.1622,
+          "observed": 0.1622,
+          "ciLow": 0.1412,
+          "ciHigh": 0.1857
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 3925,
+          "meanPredicted": 0.2523,
+          "observed": 0.2596,
+          "ciLow": 0.2461,
+          "ciHigh": 0.2736
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 1520,
+          "meanPredicted": 0.3482,
+          "observed": 0.3408,
+          "ciLow": 0.3174,
+          "ciHigh": 0.365
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 1196,
+          "meanPredicted": 0.4473,
+          "observed": 0.4398,
+          "ciLow": 0.4119,
+          "ciHigh": 0.4681
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 791,
+          "meanPredicted": 0.5462,
+          "observed": 0.5297,
+          "ciLow": 0.4949,
+          "ciHigh": 0.5643
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 409,
+          "meanPredicted": 0.6412,
+          "observed": 0.6381,
+          "ciLow": 0.5905,
+          "ciHigh": 0.6832
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 159,
+          "meanPredicted": 0.7437,
+          "observed": 0.8113,
+          "ciLow": 0.7434,
+          "ciHigh": 0.8645
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 46,
+          "meanPredicted": 0.8324,
+          "observed": 0.7826,
+          "ciLow": 0.6443,
+          "ciHigh": 0.8774
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 0,
+          "meanPredicted": null,
+          "observed": null,
+          "ciLow": 0,
+          "ciHigh": 1
+        }
+      ]
+    },
+    "over25": {
+      "ece": 0.0352,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanPredicted": null,
+          "observed": null,
+          "ciLow": 0,
+          "ciHigh": 1
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanPredicted": null,
+          "observed": null,
+          "ciLow": 0,
+          "ciHigh": 1
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanPredicted": null,
+          "observed": null,
+          "ciLow": 0,
+          "ciHigh": 1
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 206,
+          "meanPredicted": 0.3786,
+          "observed": 0.4951,
+          "ciLow": 0.4276,
+          "ciHigh": 0.5629
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 1195,
+          "meanPredicted": 0.4547,
+          "observed": 0.477,
+          "ciLow": 0.4488,
+          "ciHigh": 0.5053
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 1221,
+          "meanPredicted": 0.5467,
+          "observed": 0.5733,
+          "ciLow": 0.5454,
+          "ciHigh": 0.6008
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 434,
+          "meanPredicted": 0.6335,
+          "observed": 0.5899,
+          "ciLow": 0.543,
+          "ciHigh": 0.6352
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 33,
+          "meanPredicted": 0.7317,
+          "observed": 0.9394,
+          "ciLow": 0.8039,
+          "ciHigh": 0.9832
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanPredicted": null,
+          "observed": null,
+          "ciLow": 0,
+          "ciHigh": 1
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 0,
+          "meanPredicted": null,
+          "observed": null,
+          "ciLow": 0,
+          "ciHigh": 1
+        }
+      ]
+    },
+    "btts": {
+      "ece": 0.0265,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanPredicted": null,
+          "observed": null,
+          "ciLow": 0,
+          "ciHigh": 1
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanPredicted": null,
+          "observed": null,
+          "ciLow": 0,
+          "ciHigh": 1
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 7,
+          "meanPredicted": 0.2867,
+          "observed": 0.2857,
+          "ciLow": 0.0822,
+          "ciHigh": 0.6411
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 106,
+          "meanPredicted": 0.3726,
+          "observed": 0.4057,
+          "ciLow": 0.3171,
+          "ciHigh": 0.5008
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 1064,
+          "meanPredicted": 0.4634,
+          "observed": 0.5094,
+          "ciLow": 0.4794,
+          "ciHigh": 0.5393
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 1526,
+          "meanPredicted": 0.5456,
+          "observed": 0.5642,
+          "ciLow": 0.5392,
+          "ciHigh": 0.5889
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 386,
+          "meanPredicted": 0.6273,
+          "observed": 0.6244,
+          "ciLow": 0.575,
+          "ciHigh": 0.6712
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanPredicted": null,
+          "observed": null,
+          "ciLow": 0,
+          "ciHigh": 1
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanPredicted": null,
+          "observed": null,
+          "ciLow": 0,
+          "ciHigh": 1
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 0,
+          "meanPredicted": null,
+          "observed": null,
+          "ciLow": 0,
+          "ciHigh": 1
+        }
+      ]
+    }
+  },
+  "runtimeSeconds": 158
+}

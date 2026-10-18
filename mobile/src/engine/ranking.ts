@@ -1,7 +1,7 @@
 import { getCompetition } from '@/config/competitions';
 import type { Fixture } from '@/domain/types';
 import type { Msg } from '@/i18n/types';
-import { confidenceForScope, type Confidence, type Grade, type Level } from './assessment';
+import { confidenceForMarket, type Confidence, type Grade, type Level } from './assessment';
 import type { SelectionEstimate } from './markets';
 import { findEstimate } from './markets';
 import { evaluateQuote, type OddsQuote } from './odds';
@@ -208,7 +208,7 @@ export function rankSelections(
     for (const est of selectionsFor(kind, input)) {
       if (filters.markets.length && !filters.markets.includes(est.selection.market)) continue;
       if (kind !== 'data_quality' && kind !== 'uncertain' && est.probability < filters.minProbability) continue;
-      const confidence = confidenceForScope(prediction.confidence, selectionScope(est.selection));
+      const confidence = confidenceForMarket(prediction.confidence, selectionScope(est.selection), est.group);
       if (filters.minConfidence && LEVEL_ORDER.indexOf(confidence.level) < LEVEL_ORDER.indexOf(filters.minConfidence)) continue;
 
       const quotes = input.quotes.filter((q) => q.selectionKey === est.key);

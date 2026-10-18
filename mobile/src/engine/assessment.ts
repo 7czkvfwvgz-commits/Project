@@ -2,7 +2,9 @@ import type { Fixture, LeagueDataset } from '@/domain/types';
 import type { Msg } from '@/i18n/types';
 import { diffDays, todayKey, type DateKey } from '@/time/tz';
 import type { FallbackLevel, LeagueModel, TeamRating } from './fit';
+import type { MarketGroup } from './markets';
 import type { SelectionScope } from './settlement';
+import { marketSkill } from './validation';
 
 /**
  * Model confidence and data quality are deliberately separate concepts:
@@ -112,16 +114,28 @@ export function assessConfidence(input: ConfidenceInput): Confidence {
   return { score: final, level: levelFor(final), reasons };
 }
 
-/** Half-time markets rest on extra assumptions, so they inherit lower confidence. */
-export function confidenceForScope(base: Confidence, scope: SelectionScope): Confidence {
-  if (scope === 'ft') return base;
-  const penalty = scope === 'ht' ? 15 : 25;
-  const score = clampScore(base.score - penalty);
-  return {
-    score,
-    level: levelFor(score),
-    reasons: [...base.reasons, { key: scope === 'ht' ? 'conf.halfTimeAssumption' : 'conf.htftAssumption' }],
-  };
+/**
+ * Market-level confidence: half-time markets rest on extra assumptions, and
+ * markets whose out-of-sample skill was weak or untested inherit less trust.
+ */
+export function confidenceForMarket(base: Confidence, scope: SelectionScope, group: MarketGroup): Confidence {
+  let score = base.score;
+  const reasons = [...base.reasons];
+  if (scope !== 'ft') {
+    score -= scope === 'ht' ? 15 : 25;
+    reasons.push({ key: scope === 'ht' ? 'conf.halfTimeAssumption' : 'conf.htftAssumption' });
+  }
+  const skill = marketSkill(group);
+  if (skill.level === 'weak' || skill.level === 'none') {
+    score -= skill.level === 'none' ? 20 : 10;
+    reasons.push({ key: 'conf.weakMarketSkill', params: { pct: ((skill.improvement ?? 0) * 100).toFixed(1) } });
+  } else if (skill.level === 'untested' && group !== 'handicap') {
+    score -= 5;
+    reasons.push({ key: 'conf.marketUntested' });
+  }
+  if (score === base.score) return base;
+  const final = clampScore(score);
+  return { score: final, level: levelFor(final), reasons };
 }
 
 export interface QualityInput {
