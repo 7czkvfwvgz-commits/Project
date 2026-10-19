@@ -15,10 +15,17 @@ bet slip, and tracking of the model's own accuracy. The interface is in Bulgaria
 | Type-check and lint | ✅ clean |
 | Real fixtures for a date from a free source (openfootball) | ✅ verified live: 24 fixtures on 18 Oct 2026, predictions for all of them |
 | Model validated out of sample (walk-forward, 3,089 matches) | ✅ see [Model and validation](#model-and-validation) |
-| Running on a physical iPhone or the iOS Simulator | ⚠️ **not verified** — this environment has no macOS/Xcode or device |
+| Native iOS build (Xcode 26.3, iOS 26.2 SDK) and launch in the iOS Simulator | ✅ verified on a GitHub-hosted macOS runner: [`ios-build.yml`](.github/workflows/ios-build.yml) builds the app, installs it in an iPhone simulator, launches it and checks it is still running 45 s later ([screenshot](docs/screenshots/ios-simulator-home.png)) |
+| Downloadable iPhone file (`.ipa`) | ✅ built by CI and published as [**ios-latest**](https://github.com/7czkvfwvgz-commits/Project/releases/tag/ios-latest), **unsigned**: you sign it with your own Apple ID when installing (see [Download for iPhone](#download-for-iphone-ipa)) |
+| Running on a physical iPhone | ⚠️ **not verified**: no device was available |
 | football-data.org and The Odds API integrations | ⚠️ **not verified live** — both hosts are blocked by this build environment's network policy; implemented against their v4 schemas and tested with mocked responses |
 
-Preview renders (react-native-web in headless Chromium at iPhone width — **not** captured on an iPhone):
+<img src="docs/screenshots/ios-simulator-home.png" alt="Home screen in the iOS Simulator" width="260" align="right">
+
+The image on the right is the release build running in the **iOS Simulator** on GitHub's macOS runner,
+45 s after launch, with real openfootball data.
+
+The previews below are react-native-web renders in headless Chromium at iPhone width. They were **not** captured on an iPhone:
 
 | Home | Rankings | Match | Markets |
 | --- | --- | --- | --- |
@@ -28,17 +35,69 @@ Preview renders (react-native-web in headless Chromium at iPhone width — **not
 
 ## Contents
 
-1. [Install and run on an iPhone](#install-and-run-on-an-iphone)
-2. [Optional free API keys (football-data.org, The Odds API)](#optional-free-api-keys)
-3. [Data providers and their terms](#data-providers-and-their-terms)
-4. [Markets: implemented and unavailable](#markets-implemented-and-unavailable)
-5. [Model and validation](#model-and-validation)
-6. [Features by screen](#features-by-screen)
-7. [Architecture](#architecture)
-8. [Tests and results](#tests-and-results)
-9. [Building an installable iOS app](#building-an-installable-ios-app)
-10. [Known limitations and unresolved issues](#known-limitations-and-unresolved-issues)
-11. [Roadmap (no paid services needed)](#roadmap-no-paid-services-needed)
+1. [Download for iPhone (.ipa)](#download-for-iphone-ipa)
+2. [Install and run on an iPhone (development, Expo Go)](#install-and-run-on-an-iphone)
+3. [Optional free API keys (football-data.org, The Odds API)](#optional-free-api-keys)
+4. [Data providers and their terms](#data-providers-and-their-terms)
+5. [Markets: implemented and unavailable](#markets-implemented-and-unavailable)
+6. [Model and validation](#model-and-validation)
+7. [Features by screen](#features-by-screen)
+8. [Architecture](#architecture)
+9. [Tests and results](#tests-and-results)
+10. [Building an installable iOS app](#building-an-installable-ios-app)
+11. [Known limitations and unresolved issues](#known-limitations-and-unresolved-issues)
+12. [Roadmap (no paid services needed)](#roadmap-no-paid-services-needed)
+
+---
+
+## Download for iPhone (.ipa)
+
+Every push that changes `mobile/` runs [`.github/workflows/ios-build.yml`](.github/workflows/ios-build.yml)
+on a GitHub-hosted Mac and replaces the **ios-latest** pre-release:
+
+| File | For |
+| --- | --- |
+| [`FutbolAnaliz-unsigned.ipa`](https://github.com/7czkvfwvgz-commits/Project/releases/download/ios-latest/FutbolAnaliz-unsigned.ipa) | iPhone (arm64, iOS 16.4 or later), Release build with the JavaScript bundle embedded. It runs without Expo Go or a computer. |
+| [`FutbolAnaliz-simulator.zip`](https://github.com/7czkvfwvgz-commits/Project/releases/download/ios-latest/FutbolAnaliz-simulator.zip) | iOS Simulator on Apple-silicon Macs: unzip, then `xcrun simctl install booted FutbolAnaliz.app` |
+| `SHA256SUMS.txt`, `simulator-launch-screenshot.png` | checksums; the CI smoke-test screenshot |
+
+**Why "unsigned".** iOS only installs apps signed with an Apple certificate. Signing needs an Apple
+account, and no Apple credentials are stored in this repository or its CI. So the `.ipa` is built
+without a signature, and you sign it with your own Apple ID when you install it. The tools below do
+that in one step.
+
+### Install with a free Apple ID (Sideloadly, Windows or macOS)
+
+1. Install [Sideloadly](https://sideloadly.io). On Windows it also needs the web-download (non-Microsoft-Store) versions of iTunes and iCloud.
+2. Connect the iPhone by USB, unlock it and tap **Trust** on the phone.
+3. Drag `FutbolAnaliz-unsigned.ipa` into Sideloadly, enter your Apple ID and press **Start**.
+   Sideloadly signs in to Apple with this account to create a free development certificate. If you would rather not use your main account, create a separate free Apple ID for this.
+4. On iOS 16 or later, turn on **Settings → Privacy & Security → Developer Mode**, let the phone restart and confirm.
+5. On the iPhone, open **Settings → General → VPN & Device Management**, tap your Apple ID under *Developer App* and choose **Trust**.
+6. Open **Футбол Анализ**.
+
+Limits that Apple places on a free Apple ID:
+
+- The signature lasts **7 days**. After that the app will not open until you re-sign it, either by repeating step 3 or with Sideloadly's automatic refresh. Your data stays on the phone.
+- At most **3** sideloaded apps can be active at once.
+- If the tool reports that the bundle identifier `com.example.footballanalytics` is unavailable, set a different bundle ID in the tool's options (any reverse-DNS name you like), or change `ios.bundleIdentifier` in `mobile/app.json` and let CI rebuild.
+
+[AltStore](https://altstore.io) (AltServer on a computer plus AltStore on the phone) works the same way
+and also needs a weekly refresh. With a paid **Apple Developer Program** membership, you can sign the
+`.ipa` with your own certificate (valid for a year), or use EAS Build / TestFlight as described in
+[Building an installable iOS app](#building-an-installable-ios-app).
+
+**What was and was not tested.** CI installs the simulator build in an iPhone simulator, launches it and
+fails the run if the app is no longer running 45 s later. It then saves the screenshot shown at the top
+of this README. The device `.ipa` comes from the same source and is checked for structure: arm64 binary,
+embedded Hermes bundle, `Payload/FutbolAnaliz.app` layout. It has **not** been installed on a physical
+iPhone, because none was available.
+
+**Rebuild or configure.** Open *Actions → iOS build → Run workflow*. Fixtures, results and the model work
+without any configuration. To give the built app the optional proxy (football-data.org and odds), add
+`EXPO_PUBLIC_PROXY_URL` and, optionally, `EXPO_PUBLIC_PROXY_CLIENT_TOKEN` under *Settings → Secrets and
+variables → Actions → **Variables***, then rebuild. These are public values that end up inside the app.
+Never put provider API keys there: keys belong only on the proxy server.
 
 ---
 
@@ -333,6 +392,7 @@ Results from the final run of this delivery:
 | `server` tests (node:test) | ✅ **10 passed / 10** |
 | `expo export --platform ios` | ✅ bundles (4.4 MB Hermes bytecode) |
 | `npm run smoke` (live openfootball, 18 Oct 2026) | ✅ 24 fixtures, 24 predictions, 0 consistency failures |
+| GitHub Actions `iOS build` (macOS runner, Xcode 26.3) | ✅ unsigned device archive (arm64, 12 MB `.ipa`), simulator build, launch smoke test, release published |
 
 What the suites cover:
 
@@ -360,8 +420,21 @@ What the suites cover:
 
 ## Building an installable iOS app
 
-Expo Go is enough for development. For an app installed without Expo Go, use EAS Build (`mobile/eas.json`
-has three profiles). Change `ios.bundleIdentifier` in `mobile/app.json` (currently
+The ready-made unsigned `.ipa` is described in [Download for iPhone](#download-for-iphone-ipa). To build it
+yourself on a Mac with Xcode 16.1 or later (CI uses Xcode 26.3), run:
+
+```bash
+cd mobile && npm ci
+npx expo prebuild --platform ios
+cd ios && pod install && cd ..
+xcodebuild -workspace ios/FutbolAnaliz.xcworkspace -scheme FutbolAnaliz -configuration Release \
+  -destination 'generic/platform=iOS' -archivePath build/FutbolAnaliz.xcarchive archive \
+  CODE_SIGNING_ALLOWED=NO
+# or open ios/FutbolAnaliz.xcworkspace in Xcode, pick your team under Signing & Capabilities and press Run
+```
+
+Expo Go is enough for development. For a signed app installed without Expo Go, you can also use EAS Build
+(`mobile/eas.json` has three profiles). Change `ios.bundleIdentifier` in `mobile/app.json` (currently
 `com.example.footballanalytics`) to an identifier you own first.
 
 ```bash
@@ -375,15 +448,16 @@ eas build -p ios --profile production && eas submit -p ios   # TestFlight / App 
 ```
 
 Set `EXPO_PUBLIC_PROXY_URL` for builds as an EAS environment variable (it is public, not a secret).
-Nothing in this section was run here: it needs an Expo login and, for devices, an Apple Developer
-account that this environment does not have.
+The EAS commands were not run, because they need an Expo login and, for devices, an Apple Developer
+account. The `xcodebuild` route is what CI runs.
 
 ---
 
 ## Known limitations and unresolved issues
 
-- **Not run on iOS.** No macOS/Xcode or iPhone was available. Verification consists of the iOS Metro
-  bundle, the Jest React Native renderer tests and a web-rendered visual preview.
+- **Not run on a physical iPhone.** The native build is verified on CI: it compiles with Xcode 26.3, and
+  the Release build launches in the iOS Simulator and stays running. No device was available. The
+  downloadable `.ipa` is unsigned, so installing it requires re-signing (a free Apple ID re-signs every 7 days).
 - **football-data.org and The Odds API were never called for real** — this environment's network policy
   blocks both hosts. Their mappings follow the documented v4 schemas and are tested with mocked payloads;
   please check them with your keys (Settings → Data sources).
