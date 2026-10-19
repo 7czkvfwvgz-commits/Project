@@ -15,15 +15,15 @@ bet slip, and tracking of the model's own accuracy. The interface is in Bulgaria
 | Type-check and lint | ✅ clean |
 | Real fixtures for a date from a free source (openfootball) | ✅ verified live: 24 fixtures on 18 Oct 2026, predictions for all of them |
 | Model validated out of sample (walk-forward, 3,089 matches) | ✅ see [Model and validation](#model-and-validation) |
-| Native iOS build (Xcode 26.3, iOS 26.2 SDK) and launch in the iOS Simulator | ✅ verified on a GitHub-hosted macOS runner: [`ios-build.yml`](.github/workflows/ios-build.yml) builds the app, installs it in an iPhone simulator, launches it and checks it is still running 45 s later ([screenshot](docs/screenshots/ios-simulator-home.png)) |
-| Downloadable iPhone file (`.ipa`) | ✅ built by CI and published as [**ios-latest**](https://github.com/7czkvfwvgz-commits/Project/releases/tag/ios-latest), **unsigned**: you sign it with your own Apple ID when installing (see [Download for iPhone](#download-for-iphone-ipa)) |
+| Native iOS build and launch in the iOS Simulator | ✅ verified in CI runs #1 and #2 (18–19 Oct 2026) on a GitHub-hosted macOS runner with Xcode 26.3 and the iOS 26.2 SDK. [`ios-build.yml`](.github/workflows/ios-build.yml) builds the app, installs it in an iPhone simulator, launches it and checks the process is still alive 45 s later ([screenshot](docs/screenshots/ios-simulator-home.png)) |
+| Downloadable iPhone file (`.ipa`) | ✅ built by CI and published as [**ios-latest**](https://github.com/7czkvfwvgz-commits/Project/releases/tag/ios-latest). It is **unsigned** and has not been installed on an iPhone: you re-sign it with your own Apple ID when installing (see [Download for iPhone](#download-for-iphone-ipa)) |
 | Running on a physical iPhone | ⚠️ **not verified**: no device was available |
 | football-data.org and The Odds API integrations | ⚠️ **not verified live** — both hosts are blocked by this build environment's network policy; implemented against their v4 schemas and tested with mocked responses |
 
-<img src="docs/screenshots/ios-simulator-home.png" alt="Home screen in the iOS Simulator" width="260" align="right">
-
-The image on the right is the release build running in the **iOS Simulator** on GitHub's macOS runner,
-45 s after launch, with real openfootball data.
+<p align="center">
+  <img src="docs/screenshots/ios-simulator-home.png" alt="Home screen in the iOS Simulator" width="260"><br>
+  <sub>Release configuration running in the <b>iOS Simulator</b> on GitHub's macOS runner, 45 s after launch, with fixtures fetched live from openfootball (CI run #1, 18 Oct 2026).</sub>
+</p>
 
 The previews below are react-native-web renders in headless Chromium at iPhone width. They were **not** captured on an iPhone:
 
@@ -52,19 +52,31 @@ The previews below are react-native-web renders in headless Chromium at iPhone w
 
 ## Download for iPhone (.ipa)
 
-Every push that changes `mobile/` runs [`.github/workflows/ios-build.yml`](.github/workflows/ios-build.yml)
-on a GitHub-hosted Mac and replaces the **ios-latest** pre-release:
+[`.github/workflows/ios-build.yml`](.github/workflows/ios-build.yml) runs on a GitHub-hosted Mac. It is
+triggered by every push to `claude/iphone-football-analytics-8ql0f0` (the default branch) that changes
+`mobile/` or the workflow, and by manual runs. When all its jobs pass, it updates the **ios-latest**
+pre-release with these files:
 
 | File | For |
 | --- | --- |
-| [`FutbolAnaliz-unsigned.ipa`](https://github.com/7czkvfwvgz-commits/Project/releases/download/ios-latest/FutbolAnaliz-unsigned.ipa) | iPhone (arm64, iOS 16.4 or later), Release build with the JavaScript bundle embedded. It runs without Expo Go or a computer. |
-| [`FutbolAnaliz-simulator.zip`](https://github.com/7czkvfwvgz-commits/Project/releases/download/ios-latest/FutbolAnaliz-simulator.zip) | iOS Simulator on Apple-silicon Macs: unzip, then `xcrun simctl install booted FutbolAnaliz.app` |
+| [`FutbolAnaliz-unsigned.ipa`](https://github.com/7czkvfwvgz-commits/Project/releases/download/ios-latest/FutbolAnaliz-unsigned.ipa) | iPhone (arm64, iOS 16.4 or later). Release build with the Hermes JavaScript bundle embedded, so it needs neither Expo Go nor a Metro dev server. It must be re-signed before installing (see below). **Not yet tested on a physical iPhone.** |
+| [`FutbolAnaliz-simulator.zip`](https://github.com/7czkvfwvgz-commits/Project/releases/download/ios-latest/FutbolAnaliz-simulator.zip) | iOS Simulator 16.4 or later. The binary is arm64 + x86_64, but it has only been launched on the Apple-silicon CI runner. Boot a simulator (`open -a Simulator`), unzip, then run `xcrun simctl install booted FutbolAnaliz.app` |
 | `SHA256SUMS.txt`, `simulator-launch-screenshot.png` | checksums; the CI smoke-test screenshot |
 
 **Why "unsigned".** iOS only installs apps signed with an Apple certificate. Signing needs an Apple
 account, and no Apple credentials are stored in this repository or its CI. So the `.ipa` is built
 without a signature, and you sign it with your own Apple ID when you install it. The tools below do
 that in one step.
+
+> [!WARNING]
+> **Known problem with free Apple ID signing (October 2026).** Since 12 Oct 2026, users of Sideloadly,
+> AltServer/AltStore, SideStore and similar tools report that Apple's sign-in rejects them with
+> `-80045 (This action cannot be completed at this time)` or `HTTP 503` from `gsa.apple.com`. See for example
+> [AltStore #1828](https://github.com/altstoreio/AltStore/issues/1828) and
+> [Sideloadly #23](https://github.com/SideloadlyiOS/Sideloadly-Download/issues/23); both were still open on 19 Oct 2026.
+> The cause is on Apple's side, not in this `.ipa`. Update the tool and check its issue tracker. If you have
+> a Mac, signing with Xcode and your free Personal Team avoids these tools entirely (see
+> [Building an installable iOS app](#building-an-installable-ios-app)).
 
 ### Install with a free Apple ID (Sideloadly, Windows or macOS)
 
@@ -76,28 +88,49 @@ that in one step.
 5. On the iPhone, open **Settings → General → VPN & Device Management**, tap your Apple ID under *Developer App* and choose **Trust**.
 6. Open **Футбол Анализ**.
 
-Limits that Apple places on a free Apple ID:
+Limits and pitfalls with a free Apple ID:
 
-- The signature lasts **7 days**. After that the app will not open until you re-sign it, either by repeating step 3 or with Sideloadly's automatic refresh. Your data stays on the phone.
-- At most **3** sideloaded apps can be active at once.
-- If the tool reports that the bundle identifier `com.example.footballanalytics` is unavailable, set a different bundle ID in the tool's options (any reverse-DNS name you like), or change `ios.bundleIdentifier` in `mobile/app.json` and let CI rebuild.
+- **The signature lasts 7 days.** After that the app will not open until you re-sign it. Repeat step 3 with
+  the same Apple ID and the same bundle ID, or turn on Sideloadly's automatic-refresh option when you
+  sideload. Automatic refresh only works while Sideloadly's daemon is running on the computer and the
+  phone is connected by USB or reachable over Wi-Fi. Your data stays on the phone as long as you keep the
+  same bundle ID and do not delete the app.
+- **At most 3 sideloaded apps can be active at once**, and you can register at most 10 App IDs per 7 days.
+  Each bundle ID you sign with uses one App ID.
+- **"Bundle identifier unavailable":** if Sideloadly reports that `com.example.footballanalytics` is
+  unavailable, enter a different bundle ID in its advanced options, or change `ios.bundleIdentifier` in
+  `mobile/app.json` and let CI rebuild. A new bundle ID installs a separate copy of the app without your
+  data. AltStore adds your team ID to the bundle ID automatically.
+- **`0xe8008024 (The provisioning profile is banned)`:** some free Apple IDs get this error on iOS 26 with
+  every tool. It is not caused by this app. Users report that signing with a different Apple ID fixes it.
 
-[AltStore](https://altstore.io) (AltServer on a computer plus AltStore on the phone) works the same way
-and also needs a weekly refresh. With a paid **Apple Developer Program** membership, you can sign the
-`.ipa` with your own certificate (valid for a year), or use EAS Build / TestFlight as described in
+**AltStore alternative.** [AltStore Classic](https://faq.altstore.io) (AltServer on a Windows PC or Mac
+plus AltStore on the phone) has the same 7-day refresh, and AltStore itself uses one of the 3 app slots.
+Use AltStore **Classic**. AltStore PAL (EU, Japan and Brazil) installs only notarized apps and cannot
+install this `.ipa`. On Windows, use AltServer 1.7.4 or later: apps signed by older versions crash on
+launch on iOS 26.4 and later. AltStore Classic 2.3 needs iOS 17.4.
+
+**Paid account.** With a paid **Apple Developer Program** membership, you can sign the `.ipa` with your
+own certificate (valid for a year), or use EAS Build / TestFlight as described in
 [Building an installable iOS app](#building-an-installable-ios-app).
 
-**What was and was not tested.** CI installs the simulator build in an iPhone simulator, launches it and
-fails the run if the app is no longer running 45 s later. It then saves the screenshot shown at the top
-of this README. The device `.ipa` comes from the same source and is checked for structure: arm64 binary,
-embedded Hermes bundle, `Payload/FutbolAnaliz.app` layout. It has **not** been installed on a physical
-iPhone, because none was available.
+**What was and was not tested.** CI installs the simulator build in an iPhone simulator and launches it.
+45 s later it takes the screenshot shown at the top of this README, and it fails the run if the app
+process is no longer running. The device `.ipa` is built from the same commit in a separate job, with the
+iPhone SDK. CI asserts that its binary is arm64-only, that `main.jsbundle` is Hermes bytecode and that
+the archive layout is `Payload/FutbolAnaliz.app`. The published file was also unzipped and inspected by
+hand. **The device build has never been run**: not on a physical iPhone, because none was available, and
+not in the simulator, which needs a different binary.
 
 **Rebuild or configure.** Open *Actions → iOS build → Run workflow*. Fixtures, results and the model work
-without any configuration. To give the built app the optional proxy (football-data.org and odds), add
-`EXPO_PUBLIC_PROXY_URL` and, optionally, `EXPO_PUBLIC_PROXY_CLIENT_TOKEN` under *Settings → Secrets and
-variables → Actions → **Variables***, then rebuild. These are public values that end up inside the app.
-Never put provider API keys there: keys belong only on the proxy server.
+without any configuration. You can give the built app the optional proxy for football-data.org and
+odds. Both integrations are still unverified against the live services (see
+[Known limitations](#known-limitations-and-unresolved-issues)). Add `EXPO_PUBLIC_PROXY_URL` and,
+optionally, `EXPO_PUBLIC_PROXY_CLIENT_TOKEN` under *Settings → Secrets and variables → Actions →
+**Variables***, then rebuild. Use an `https://` URL, such as the Cloudflare Workers deployment: the
+Release build keeps App Transport Security on, so a plain-`http` public host is blocked. These values
+are public and end up inside the app. Never put provider API keys there: keys belong only on the proxy
+server.
 
 ---
 
@@ -392,7 +425,7 @@ Results from the final run of this delivery:
 | `server` tests (node:test) | ✅ **10 passed / 10** |
 | `expo export --platform ios` | ✅ bundles (4.4 MB Hermes bytecode) |
 | `npm run smoke` (live openfootball, 18 Oct 2026) | ✅ 24 fixtures, 24 predictions, 0 consistency failures |
-| GitHub Actions `iOS build` (macOS runner, Xcode 26.3) | ✅ unsigned device archive (arm64, 12 MB `.ipa`), simulator build, launch smoke test, release published |
+| GitHub Actions `iOS build`, runs #1 and #2 (macOS runner, Xcode 26.3) | ✅ unsigned device archive (arm64, 12 MB `.ipa`), simulator build, launch smoke test, release published |
 
 What the suites cover:
 
@@ -420,18 +453,29 @@ What the suites cover:
 
 ## Building an installable iOS app
 
-The ready-made unsigned `.ipa` is described in [Download for iPhone](#download-for-iphone-ipa). To build it
-yourself on a Mac with Xcode 16.1 or later (CI uses Xcode 26.3), run:
+The ready-made unsigned `.ipa` is described in [Download for iPhone](#download-for-iphone-ipa). Building
+the same file yourself needs a Mac with Xcode, CocoaPods and Node.js 20.19+ or 22. Only Xcode 26.3 has been
+tested; React Native 0.86 declares Xcode 16.1 as its minimum. These are the commands CI runs:
 
 ```bash
 cd mobile && npm ci
-npx expo prebuild --platform ios
-cd ios && pod install && cd ..
+npx expo prebuild --platform ios --no-install   # generates ios/ (git-ignored); also rewrites the "ios" script in package.json
+(cd ios && pod install)
 xcodebuild -workspace ios/FutbolAnaliz.xcworkspace -scheme FutbolAnaliz -configuration Release \
-  -destination 'generic/platform=iOS' -archivePath build/FutbolAnaliz.xcarchive archive \
-  CODE_SIGNING_ALLOWED=NO
-# or open ios/FutbolAnaliz.xcworkspace in Xcode, pick your team under Signing & Capabilities and press Run
+  -destination 'generic/platform=iOS' -archivePath ios/build/FutbolAnaliz.xcarchive \
+  CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" archive
+mkdir -p ios/build/ipa/Payload
+cp -R ios/build/FutbolAnaliz.xcarchive/Products/Applications/FutbolAnaliz.app ios/build/ipa/Payload/
+(cd ios/build/ipa && zip -qry ../FutbolAnaliz-unsigned.ipa Payload)   # -> mobile/ios/build/FutbolAnaliz-unsigned.ipa
 ```
+
+**Installing straight from Xcode with a free Apple ID** (not tested here; it also avoids the third-party
+sign-in problem above):
+
+1. Add your Apple ID under *Xcode → Settings → Accounts*.
+2. Open `ios/FutbolAnaliz.xcworkspace` and select the *FutbolAnaliz* target. Under *Signing & Capabilities*, choose your *Personal Team* and change the bundle identifier to one of your own.
+3. Set *Product → Scheme → Edit Scheme → Run → Build Configuration* to **Release**. Debug builds expect the Metro dev server.
+4. Select the connected iPhone and press **Run**. The free-account limits above (7 days, 3 apps) apply here too.
 
 Expo Go is enough for development. For a signed app installed without Expo Go, you can also use EAS Build
 (`mobile/eas.json` has three profiles). Change `ios.bundleIdentifier` in `mobile/app.json` (currently
@@ -449,15 +493,17 @@ eas build -p ios --profile production && eas submit -p ios   # TestFlight / App 
 
 Set `EXPO_PUBLIC_PROXY_URL` for builds as an EAS environment variable (it is public, not a secret).
 The EAS commands were not run, because they need an Expo login and, for devices, an Apple Developer
-account. The `xcodebuild` route is what CI runs.
+account. The `xcodebuild` archive above is the same build CI runs.
 
 ---
 
 ## Known limitations and unresolved issues
 
 - **Not run on a physical iPhone.** The native build is verified on CI: it compiles with Xcode 26.3, and
-  the Release build launches in the iOS Simulator and stays running. No device was available. The
-  downloadable `.ipa` is unsigned, so installing it requires re-signing (a free Apple ID re-signs every 7 days).
+  the Release build launches in the iOS Simulator and is still running 45 s later. No device was
+  available. The downloadable `.ipa` is unsigned, so it must be re-signed before installing. With a free
+  Apple ID the signature expires after 7 days and has to be renewed. Free-account signing tools are
+  currently affected by Apple sign-in failures (see [Download for iPhone](#download-for-iphone-ipa)).
 - **football-data.org and The Odds API were never called for real** — this environment's network policy
   blocks both hosts. Their mappings follow the documented v4 schemas and are tested with mocked payloads;
   please check them with your keys (Settings → Data sources).
